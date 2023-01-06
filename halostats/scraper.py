@@ -14,7 +14,14 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 log = logging.getLogger("red.vrt.halostats.scraper")
 
-MODES = ["Overall", "Ranked Arena", "Tactical Slayer", "Team Slayer", "Quick Play", "Big Team Battle"]
+MODES = [
+    "Overall",
+    "Ranked Arena",
+    "Tactical Slayer",
+    "Team Slayer",
+    "Quick Play",
+    "Big Team Battle",
+]
 
 
 def get_profile_data(gamertag: str) -> list:
@@ -22,8 +29,7 @@ def get_profile_data(gamertag: str) -> list:
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=chrome_options
+        service=Service(ChromeDriverManager().install()), options=chrome_options
     )
     driver.get("https://halotracker.com")
     search = WebDriverWait(driver, 10).until(
@@ -61,20 +67,20 @@ def get_profile_data(gamertag: str) -> list:
             return embeds
         driver.execute_script("arguments[0].click();", mode)
         # GET MAIN STATS
-        main_stats = WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located(
-                (By.CLASS_NAME, "giant-stats")
-            )
-        ).text
+        main_stats = (
+            WebDriverWait(driver, 10)
+            .until(EC.visibility_of_element_located((By.CLASS_NAME, "giant-stats")))
+            .text
+        )
         main_stats = main_stats.split("\n")
         main_stats = tabulate_stats(main_stats)
 
         # GET SECONDARY STATS
-        secondary_stats = WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located(
-                (By.CLASS_NAME, "main")
-            )
-        ).text
+        secondary_stats = (
+            WebDriverWait(driver, 10)
+            .until(EC.visibility_of_element_located((By.CLASS_NAME, "main")))
+            .text
+        )
         secondary_stats = secondary_stats.split("\n")
         secondary_stats = tabulate_stats(secondary_stats)
 
@@ -89,17 +95,24 @@ def get_profile_data(gamertag: str) -> list:
 
         embed = discord.Embed(
             title=f"{gamertag}'s Halo Infinite Stats",
-            description=f"**{mode_name.upper()}**\n"
-                        f"{main_stats}\n",
-            color=discord.Color.random()
+            description=f"**{mode_name.upper()}**\n" f"{main_stats}\n",
+            color=discord.Color.random(),
         )
         if pfp:
             embed.set_thumbnail(url=pfp)
         embed.add_field(name="Details", value=secondary_stats, inline=False)
         if shot_accuracy:
-            embed.add_field(name="Shot Accuracy", value=box(shot_accuracy, lang='python'), inline=False)
+            embed.add_field(
+                name="Shot Accuracy",
+                value=box(shot_accuracy, lang="python"),
+                inline=False,
+            )
         if headshot_accuracy:
-            embed.add_field(name="Headshot Accuracy", value=box(headshot_accuracy, lang='python'), inline=False)
+            embed.add_field(
+                name="Headshot Accuracy",
+                value=box(headshot_accuracy, lang="python"),
+                inline=False,
+            )
         embed.set_footer(text=f"Pages {page_num + 1}/{len(MODES)}")
         embeds.append(embed)
     driver.quit()
@@ -120,4 +133,4 @@ def tabulate_stats(stats: list) -> str:
             num = 1
     table = list(zip(left, right))
     tabulated = tabulate(table, tablefmt="presto")
-    return box(tabulated, lang='python')
+    return box(tabulated, lang="python")

@@ -1,8 +1,8 @@
 import logging
 
 import discord
-from redbot.core import commands, Config
-from redbot.core.utils.menus import menu, DEFAULT_CONTROLS
+from redbot.core import Config, commands
+from redbot.core.utils.menus import DEFAULT_CONTROLS, menu
 
 from .scraper import get_profile_data
 
@@ -13,14 +13,17 @@ LOADING = "https://i.imgur.com/Ar7duFt.gif"
 
 class HaloStats(commands.Cog):
     """View your Halo Infinite stats"""
+
     __author__ = "Vertyco#0117"
     __version__ = "0.0.1"
 
     def format_help_for_context(self, ctx):
         helpcmd = super().format_help_for_context(ctx)
-        info = f"{helpcmd}\n" \
-               f"Cog Version: {self.__version__}\n" \
-               f"Author: {self.__author__}\n"
+        info = (
+            f"{helpcmd}\n"
+            f"Cog Version: {self.__version__}\n"
+            f"Author: {self.__author__}\n"
+        )
         return info
 
     async def red_delete_data_for_user(self, *, requester, user_id: int):
@@ -74,11 +77,11 @@ class HaloStats(commands.Cog):
             if user_id in users:
                 gamertag = users[user_id]
             else:
-                return await ctx.send(f"Please include a Gamertag or type `{ctx.prefix}setmygt`")
+                return await ctx.send(
+                    f"Please include a Gamertag or type `{ctx.prefix}setmygt`"
+                )
         async with ctx.typing():
-            embed = discord.Embed(
-                description="Gathering Data..."
-            )
+            embed = discord.Embed(description="Gathering Data...")
             embed.set_thumbnail(url=LOADING)
             msg = await ctx.send(embed=embed)
             pages = await self.run_scraper(gamertag)
@@ -87,4 +90,3 @@ class HaloStats(commands.Cog):
                 await menu(ctx, pages, DEFAULT_CONTROLS)
             else:
                 await ctx.send(f"Couldnt find stats for {gamertag}")
-

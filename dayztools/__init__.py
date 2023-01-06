@@ -1,8 +1,6 @@
 from .dayztools import DayZTools
 
-___red_end_user_data_statement__ = (
-    "Thank you for installing!"
-)
+___red_end_user_data_statement__ = "Thank you for installing!"
 
 
 def setup(bot):

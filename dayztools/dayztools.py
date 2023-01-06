@@ -6,7 +6,7 @@ import re
 import aiohttp
 import discord
 from discord.ext import tasks
-from redbot.core import commands, Config
+from redbot.core import Config, commands
 from redbot.core.utils.chat_formatting import box
 
 
@@ -14,6 +14,7 @@ class DayZTools(commands.Cog):
     """
     Tools for DayZ!
     """
+
     __author__ = "Vertyco"
     __version__ = "0.1.1"
 
@@ -31,7 +32,7 @@ class DayZTools(commands.Cog):
             "statuschannel": None,
             "statusmessage": None,
             "playerlog": None,
-            "playerstats": {}
+            "playerstats": {},
         }
         self.config.register_guild(**default_guild)
 
@@ -76,7 +77,9 @@ class DayZTools(commands.Cog):
                 self.killfeed[guild.id] = {}
                 for item in service_data["data"]["services"]:
                     service_id = item["id"]
-                    info_req = f"https://api.nitrado.net/services/{service_id}:id/gameservers"
+                    info_req = (
+                        f"https://api.nitrado.net/services/{service_id}:id/gameservers"
+                    )
                     # Make another request to get game server info with id
                     async with self.session.get(info_req, headers=header) as info:
                         info_data = await info.json()
@@ -112,7 +115,7 @@ class DayZTools(commands.Cog):
                             "players": players,
                             "playermax": playermax,
                             "service_id": server["service_id"],
-                            "ntoken": ntoken
+                            "ntoken": ntoken,
                         }
             await self.server_status(guild)
             return service_data
@@ -125,9 +128,9 @@ class DayZTools(commands.Cog):
             return
         embed = discord.Embed(
             timestamp=datetime.datetime.utcnow(),
-            title=f"Server Status",
+            title="Server Status",
             color=discord.Color.random(),
-            description=f"{guild.name}'s servers\n"
+            description=f"{guild.name}'s servers\n",
         )
         for item in self.servercache[guild.id]:
             server = self.servercache[guild.id][item]
@@ -137,7 +140,7 @@ class DayZTools(commands.Cog):
             last_update = server["last_update"]
             if last_update is not None:
                 time = datetime.datetime.fromisoformat(last_update)
-                time = time.strftime('%m/%d/%Y at %H:%M:%S')
+                time = time.strftime("%m/%d/%Y at %H:%M:%S")
             else:
                 time = "Unknown"
             players = server["players"]
@@ -150,12 +153,12 @@ class DayZTools(commands.Cog):
             embed.add_field(
                 name=f"{game_name} Info",
                 value=f"**Players:** `{players}/{playermax}`"
-                      f"Server Status: `{status}`\n"
-                      f"Current Version: `{version}`\n"
-                      f"Last Updated: `{time}`\n"
-                      f"Location: `{location}`\n"
-                      f"Memory: `{memory} MB`",
-                inline=False
+                f"Server Status: `{status}`\n"
+                f"Current Version: `{version}`\n"
+                f"Last Updated: `{time}`\n"
+                f"Location: `{location}`\n"
+                f"Memory: `{memory} MB`",
+                inline=False,
             )
         channel = guild.get_channel(channeldata)
 
@@ -165,7 +168,7 @@ class DayZTools(commands.Cog):
             try:
                 msgtoedit = await channel.fetch_message(messagedata)
             except discord.NotFound:
-                print(f"DayZ Tools Status message not found. Creating new message.")
+                print("DayZ Tools Status message not found. Creating new message.")
 
         if not msgtoedit:
             await self.config.guild(guild).statusmessage.set(None)
@@ -177,7 +180,7 @@ class DayZTools(commands.Cog):
     @server_cache.before_loop
     async def before_server_cache(self):
         await self.bot.wait_until_red_ready()
-        print(f"DayZ server cache ready...")
+        print("DayZ server cache ready...")
 
     @tasks.loop(seconds=40)
     async def server_logs(self):
@@ -237,7 +240,7 @@ class DayZTools(commands.Cog):
             for line in klogs:
                 if not line:
                     continue
-                timestamp = str(re.search(r'(..:..:..)', line).group(1))
+                timestamp = str(re.search(r"(..:..:..)", line).group(1))
                 victim = str(re.search(r'"(.+?)"', line).group(1))
 
                 if "committed suicide" in line:
@@ -246,37 +249,44 @@ class DayZTools(commands.Cog):
                         embed = discord.Embed(
                             title=f"💀 Suicide | {timestamp}",
                             description=f"**{victim}** took the cowards way out.",
-                            color=discord.Color.dark_grey()
+                            color=discord.Color.dark_grey(),
                         )
                         await klog.send(embed=embed)
                         await asyncio.sleep(2)
                 elif "hit by explosion" in line:
                     k = self.checkfeed(guild, line, server)
                     if k:
-                        explosion = str(re.search(r'n \((.+?)\)$', line).group(1))
+                        explosion = str(re.search(r"n \((.+?)\)$", line).group(1))
                         embed = discord.Embed(
                             title=f"💀 Exploded | {timestamp}",
                             description=f"**{victim}** died from explosion ({explosion})",
-                            color=discord.Color.orange()
+                            color=discord.Color.orange(),
                         )
                         await klog.send(embed=embed)
                         await asyncio.sleep(2)
                 elif "killed by Player" in line:
                     k = self.checkfeed(guild, line, server)
                     if k:
-                        killer = str(re.search(r'killed by Player "(.*?)"', line).group(1))
-                        coords = str(re.search(r'pos=<(.*?)>', line).group(1))
-                        weapon = str(re.search(r' with (.*) from', line).group(1))
+                        killer = str(
+                            re.search(r'killed by Player "(.*?)"', line).group(1)
+                        )
+                        coords = str(re.search(r"pos=<(.*?)>", line).group(1))
+                        weapon = str(re.search(r" with (.*) from", line).group(1))
                         try:
-                            distance = round(float(re.search(r'from ([0-9.]+) meters', line).group(1)), 2)
-                        except AttributeError as e:
+                            distance = round(
+                                float(
+                                    re.search(r"from ([0-9.]+) meters", line).group(1)
+                                ),
+                                2,
+                            )
+                        except AttributeError:
                             distance = 0.0
                             print("Distance of killer failed to calculate")
 
                         embed = discord.Embed(
                             title=f"💀 PvP Kill | {timestamp}",
                             description=f"**{killer}** killed **{victim}**\n**Weapon**: `{weapon}` ({distance}m)\n**Location**: {coords}",
-                            color=discord.Color.red()
+                            color=discord.Color.red(),
                         )
                         embed.set_thumbnail(url="https://i.imgur.com/bH8tA1v.png")
                         await klog.send(embed=embed)
@@ -287,17 +297,20 @@ class DayZTools(commands.Cog):
                         embed = discord.Embed(
                             title=f"🩸 Bleed Out | {timestamp}",
                             description=f"**{victim}** ran out of blood",
-                            color=discord.Color.dark_red()
+                            color=discord.Color.dark_red(),
                         )
                         await klog.send(embed=embed)
                         await asyncio.sleep(2)
-                elif "Animal_CanisLupus_Grey" in line or "Animal_CanisLupus_White" in line:
+                elif (
+                    "Animal_CanisLupus_Grey" in line
+                    or "Animal_CanisLupus_White" in line
+                ):
                     k = self.checkfeed(guild, line, server)
                     if k:
                         embed = discord.Embed(
                             title=f"🐺 Wolf Kill | {timestamp}",
                             description=f"**{victim}** was killed by a Wolf!",
-                            color=discord.Color.light_grey()
+                            color=discord.Color.light_grey(),
                         )
                         await klog.send(embed=embed)
                         await asyncio.sleep(2)
@@ -307,7 +320,7 @@ class DayZTools(commands.Cog):
                         embed = discord.Embed(
                             title=f"🐻 Beary Unfortunate | {timestamp}",
                             description=f"**{victim}** was killed by a Bear!",
-                            color=discord.Color.dark_purple()
+                            color=discord.Color.dark_purple(),
                         )
                         await klog.send(embed=embed)
                         await asyncio.sleep(2)
@@ -317,7 +330,7 @@ class DayZTools(commands.Cog):
                         embed = discord.Embed(
                             title=f"💀 Splattered | {timestamp}",
                             description=f"**{victim}** tried to fly!",
-                            color=discord.Color.magenta()
+                            color=discord.Color.magenta(),
                         )
                         await klog.send(embed=embed)
                         await asyncio.sleep(2)
@@ -343,13 +356,17 @@ class DayZTools(commands.Cog):
                 if player[2] == "connected":
                     p = self.checkplayers(guild, player, server)
                     if p:
-                        await plog.send(f":green_circle: `{p[1]}` has connected to the server. - `{p[0]}`")
+                        await plog.send(
+                            f":green_circle: `{p[1]}` has connected to the server. - `{p[0]}`"
+                        )
                         await asyncio.sleep(2)
 
                 elif player[2] == "disconnected":
                     p = self.checkplayers(guild, player, server)
                     if p:
-                        await plog.send(f":red_circle: `{p[1]}` has left the server. - `{p[0]}`")
+                        await plog.send(
+                            f":red_circle: `{p[1]}` has left the server. - `{p[0]}`"
+                        )
                         await asyncio.sleep(2)
 
             self.playerlist[guild.id][server] = newplayerlist
@@ -372,27 +389,27 @@ class DayZTools(commands.Cog):
         if nitrado_token is None:
             embed = discord.Embed(
                 title="How to obtain your Nitrado Token",
-                description="Before you can use this cog, you must set a token obtained from Nitrado's dev portal."
+                description="Before you can use this cog, you must set a token obtained from Nitrado's dev portal.",
             )
             embed.add_field(
                 name="Get Token",
                 value="**[CLICK HERE TO GO TO THE DEV PORTAL](https://server.nitrado.net/usa/developer/tokens)**",
-                inline=False
+                inline=False,
             )
             embed.add_field(
                 name="Step 1",
                 value="Sign into the portal with your Nitrado account",
-                inline=False
+                inline=False,
             )
             embed.add_field(
                 name="Step 2",
                 value="Check the `service` and `user_info` boxes, then click the `Create` button",
-                inline=False
+                inline=False,
             )
             embed.add_field(
                 name="Step 3",
                 value=f"Set your token with `{ctx.prefix}dayztools tokenset <YourToken>`",
-                inline=False
+                inline=False,
             )
             return await ctx.send(embed=embed)
         else:
@@ -406,14 +423,20 @@ class DayZTools(commands.Cog):
                         await ctx.message.delete()
                     except discord.NotFound:
                         print("Couldnt find message to delete")
-                    return await ctx.send(embed=discord.Embed(description=f"❌ {message}", color=color))
+                    return await ctx.send(
+                        embed=discord.Embed(description=f"❌ {message}", color=color)
+                    )
                 else:
                     try:
                         await ctx.message.delete()
                     except discord.NotFound:
                         print("Couldnt find message to delete")
                     color = discord.Color.green()
-                    await ctx.send(embed=discord.Embed(description=f"✅ Your token has been set!", color=color))
+                    await ctx.send(
+                        embed=discord.Embed(
+                            description="✅ Your token has been set!", color=color
+                        )
+                    )
 
     @dayz_tools.command()
     @commands.guildowner()
@@ -421,7 +444,11 @@ class DayZTools(commands.Cog):
         """Set a channel for server status to be shown."""
         await self.config.guild(ctx.guild).statuschannel.set(channel.id)
         color = discord.Color.green()
-        await ctx.send(embed=discord.Embed(description=f"✅ Status channel has been set!", color=color))
+        await ctx.send(
+            embed=discord.Embed(
+                description="✅ Status channel has been set!", color=color
+            )
+        )
 
     @dayz_tools.command()
     @commands.guildowner()
@@ -429,7 +456,9 @@ class DayZTools(commands.Cog):
         """Set a channel for player joins/leaves to be logged."""
         await self.config.guild(ctx.guild).playerlog.set(channel.id)
         color = discord.Color.green()
-        await ctx.send(embed=discord.Embed(description=f"✅ Playerlog has been set!", color=color))
+        await ctx.send(
+            embed=discord.Embed(description="✅ Playerlog has been set!", color=color)
+        )
 
     @dayz_tools.command()
     @commands.guildowner()
@@ -437,7 +466,9 @@ class DayZTools(commands.Cog):
         """Set a channel for the KillFeed to be logged."""
         await self.config.guild(ctx.guild).killfeed.set(channel.id)
         color = discord.Color.green()
-        await ctx.send(embed=discord.Embed(description=f"✅ KillFeed has been set!", color=color))
+        await ctx.send(
+            embed=discord.Embed(description="✅ KillFeed has been set!", color=color)
+        )
 
     # For testing or visual purposes
     @dayz_tools.command()
@@ -474,9 +505,9 @@ class DayZTools(commands.Cog):
         embed = discord.Embed(
             title="Cog settings",
             description=f"**Nitrado Token:** {ntoken}\n"
-                        f"**KillFeed Channel:** {killfeed}\n"
-                        f"**Playerlog Channel:** {playerlog}\n"
-                        f"**Status Channel:** {statuschannel}\n"
+            f"**KillFeed Channel:** {killfeed}\n"
+            f"**Playerlog Channel:** {playerlog}\n"
+            f"**Status Channel:** {statuschannel}\n",
         )
         await ctx.send(embed=embed)
 
@@ -504,14 +535,20 @@ class DayZTools(commands.Cog):
             else:
                 for server in self.servercache[ctx.guild.id]:
                     sid = server["service_id"]
-                    restart = f"https://api.nitrado.net/services/{sid}:id/gameservers/restart"
+                    restart = (
+                        f"https://api.nitrado.net/services/{sid}:id/gameservers/restart"
+                    )
                     header = {"Authorization": f"Bearer {ntoken}"}
                     res = await self.apipost(restart, header)
                     status = res["status"]
                     if status == "success":
-                        return await ctx.send(f"Server reboot initiated for id: {server}...")
+                        return await ctx.send(
+                            f"Server reboot initiated for id: {server}..."
+                        )
                     else:
-                        return await ctx.send(f"Server failed to reboot for id: {server}...")
+                        return await ctx.send(
+                            f"Server failed to reboot for id: {server}..."
+                        )
 
     @dayz_tools.command()
     @commands.admin()
@@ -532,4 +569,6 @@ class DayZTools(commands.Cog):
                     if status == "success":
                         return await ctx.send(f"Server stopped for id: {server}...")
                     else:
-                        return await ctx.send(f"Server failed to stop for id: {server}...")
+                        return await ctx.send(
+                            f"Server failed to stop for id: {server}..."
+                        )
