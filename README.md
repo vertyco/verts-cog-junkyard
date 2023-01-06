@@ -1,7 +1,7 @@
 # Vert's Cog Junkyard
 
 ![Artwork](https://i.imgur.com/8QGMhkj.png)
-Various cogs live here, mostly ones I have either stopped maintaining or don't want on my main repo.
+Various cogs live here, they have either been succeeded by their newer rewrite, don't work anymore, or are just no longer being maintained.
 
 ### Cogs found here may or may not still work!
 I am not providing support for these cogs anymore.
