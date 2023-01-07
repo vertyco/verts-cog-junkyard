@@ -1,0 +1,21 @@
+{
+  "author": [
+    "Vertyco"
+  ],
+  "description": "Test cog for modals",
+  "disabled": false,
+  "end_user_data_statement": "This cog is just for testing modals",
+  "hidden": false,
+  "install_msg": "Thank you for installing HaloStats!",
+  "min_bot_version": "3.4.99",
+  "permissions": [
+  ],
+  "required_cogs": {},
+  "requirements": [
+  ],
+  "short": "Modal example",
+  "tags": [
+    "modal"
+  ],
+  "type": "COG"
+}
