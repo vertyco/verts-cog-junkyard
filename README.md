@@ -50,7 +50,7 @@ If you haven't loaded the Downloader cog already, go ahead and do that first wit
 
 ```ini
 [p]repo add verts-cog-junkyard https://github.com/vertyco/verts-cog-junkyard
-                                                                   [p]cog install verts-cog-junkyard <list of cogs>
+[p]cog install verts-cog-junkyard <list of cogs>
 [p]load <list of cogs>
 ```
 
