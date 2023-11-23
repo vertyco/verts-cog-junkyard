@@ -9,7 +9,7 @@ class MCTools(commands.Cog):
     """
 
     __author__ = "Vertyco"
-    __version__ = "0.1.2"
+    __version__ = "0.1.3"
 
     def format_help_for_context(self, ctx):
         helpcmd = super().format_help_for_context(ctx)
@@ -73,7 +73,7 @@ class MCTools(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.admin()
-    async def addserver(self, ctx, address: str, port: int):
+    async def addmcserver(self, ctx, address: str, port: int):
         """Add an MC Bedrock server."""
         async with ctx.typing():
             data = await self.getserver(address, port)
@@ -92,7 +92,7 @@ class MCTools(commands.Cog):
     @commands.command()
     @commands.guild_only()
     @commands.admin()
-    async def delserver(self, ctx, name):
+    async def delmcserver(self, ctx, name):
         async with self.config.guild(ctx.guild).servers() as servers:
             if name in servers:
                 del servers[name]
